@@ -1,4 +1,6 @@
 #include "raylib.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #define windowCenter 195
 #define screenWidth 450
@@ -24,10 +26,40 @@ void firstWindow(){
     EndDrawing();
 }
 
-void secondWindow() {
+void scoreWindow() {
+
+    // IMAGE
+    Image img = LoadImage("resources/pac_chase.gif");
+    Texture2D imgTexture = LoadTextureFromImage(img);
+    DrawTexture(imgTexture, GetScreenWidth() / 2 - imgTexture.width / 2, 70, WHITE);
+
+    FILE *filePointer = fopen("data/scoreData/score.csv", "r"); // Open the archive
+
+    int i = 50;
 
     BeginDrawing();
-    DrawText("CLICK", windowCenter, 100, 20, DARKGRAY);
+
+    DrawText("SCORE", windowCenter, 100 + i, 20, WHITE);
+
+    if(filePointer != NULL) {
+        while (!feof(filePointer))
+        {
+            char line[100];
+            fgets(line, 100, filePointer);
+
+            BeginDrawing();
+            DrawText(line, windowCenter - 30, 200 + i, 20, DARKGRAY);
+            EndDrawing();
+
+            i = i + 50;
+        }
+        fclose(filePointer);
+    }
+}
+
+void gameWindow() {
+    BeginDrawing();
+    DrawText("TODO", windowCenter, 100, 20, DARKGRAY);
     EndDrawing();
 }
 
@@ -54,7 +86,7 @@ void actions() {
 
     if (btnAction) // DO THE NEXT ACTION
     {
-        secondWindow();
+        //TODO
     }
 
 }
@@ -72,8 +104,10 @@ int main(void)
 
     while (!WindowShouldClose()) 
     {
-        firstWindow();
-        actions();
+        
+        scoreWindow();
+        //firstWindow();
+        //actions();
     }
 
     CloseWindow();
