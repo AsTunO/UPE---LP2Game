@@ -31,7 +31,7 @@ void scoreWindow() {
     // IMAGE
     Image img = LoadImage("resources/pac_chase.gif");
     Texture2D imgTexture = LoadTextureFromImage(img);
-    DrawTexture(imgTexture, GetScreenWidth() / 2 - imgTexture.width / 2, 70, WHITE);
+    DrawTexture(imgTexture, GetScreenWidth() / 2 - imgTexture.width / 2, 150, WHITE);
 
     FILE *filePointer = fopen("data/scoreData/score.csv", "r"); // Open the archive
 
@@ -39,7 +39,7 @@ void scoreWindow() {
 
     BeginDrawing();
 
-    DrawText("SCORE", windowCenter, 100 + i, 20, WHITE);
+    DrawText("SCORE", windowCenter, 30, 20, WHITE);
 
     if(filePointer != NULL) {
         while (!feof(filePointer))
@@ -63,8 +63,37 @@ void gameWindow() {
     EndDrawing();
 }
 
-void actions() {
-    // BTN
+void scoreBtn() {
+    // SCORE BTN
+    Rectangle btnBounds = {windowCenter - 70, 385, 200, 50};
+    int btnState = 0;       // Button state: 0-NORMAL, 1-MOUSE_HOVER, 2-PRESSED
+    bool btnAction = false; // Button action should be activated
+
+    Vector2 mousePoint = {0.0f, 0.0f}; // MOUSE POINTER
+
+    // BTN CONDITIONS
+    mousePoint = GetMousePosition();
+    btnAction = false;
+
+    // Check button state
+    if (CheckCollisionPointRec(mousePoint, btnBounds))
+    {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            btnAction = true;
+    }
+    else
+        btnState = 0;
+
+    if (btnAction) // DO THE NEXT ACTION
+    {
+        // TODO
+    }
+
+}
+
+void playBtn()
+{
+    // PLAY BTN
     Rectangle btnBounds = {windowCenter - 70, 285, 200, 50};
     int btnState = 0;       // Button state: 0-NORMAL, 1-MOUSE_HOVER, 2-PRESSED
     bool btnAction = false; // Button action should be activated
@@ -86,9 +115,8 @@ void actions() {
 
     if (btnAction) // DO THE NEXT ACTION
     {
-        //TODO
+        // TODO
     }
-
 }
 
 int state = 0;
@@ -106,6 +134,7 @@ int main(void)
     {
         
         scoreWindow();
+        //ClearBackground(BLACK);
         //firstWindow();
         //actions();
     }
