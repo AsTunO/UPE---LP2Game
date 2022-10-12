@@ -311,9 +311,16 @@ void playBtn()
 
 void firstWindow()
 {
+    InitAudioDevice();
+
+    Music music = LoadMusicStream("resources/pacman_ringtone.mp3");
+
+    PlayMusicStream(music);
 
     while (!WindowShouldClose())
     {
+
+        UpdateMusicStream(music);
 
         // IMAGE
         Image img = LoadImage("resources/ghost_chase.gif");
@@ -332,7 +339,7 @@ void firstWindow()
         playBtn();
         scoreBtn();
     }
-
+    CloseAudioDevice();
     CloseWindow();
 }
 
