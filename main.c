@@ -7,46 +7,90 @@
 #define screenHeight 500
 #define MAX_INPUT_CHARS 9
 
+void scoreWindow();
+void homeBtn();
+void scoreBtn();
+void gameWindow();
+void runBtn();
+void nicknameWindow();
+bool IsAnyKeyPressed();
+void playBtn();
+void firstWindow();
+
 void scoreWindow()
 {
 
-    while (!WindowShouldClose()) {
-
+    int caseNum = 0;
     BeginDrawing();
-    // IMAGE
-    Image img = LoadImage("resources/pac_chase.gif");
-    Texture2D imgTexture = LoadTextureFromImage(img);
-    DrawTexture(imgTexture, GetScreenWidth() / 2 - imgTexture.width / 2, 150, WHITE);
-
-    FILE *filePointer = fopen("data/scoreData/score.csv", "r"); // Open the archive
-
-    int i = 50;
-
     ClearBackground(BLACK);
 
-    DrawText("SCORE", windowCenter, 30, 20, WHITE);
-
-    if (filePointer != NULL)
+    while (!WindowShouldClose())
     {
-        while (!feof(filePointer))
+
+        // IMAGE
+        Image img = LoadImage("resources/pac_chase.gif");
+        Texture2D imgTexture = LoadTextureFromImage(img);
+        DrawTexture(imgTexture, GetScreenWidth() / 2 - imgTexture.width / 2, 150, WHITE);
+
+        DrawRectangleLines(10, 85, 100, 50, WHITE);
+        DrawText("HOME", 30, 100, 20, RED);
+        homeBtn();
+
+        FILE *filePointer = fopen("data/scoreData/score.csv", "r"); // Open the archive
+
+        int i = 50;
+
+        DrawText("SCORE", windowCenter, 30, 20, WHITE);
+
+        if (filePointer != NULL && caseNum == 0)
         {
-            char line[100];
-            fgets(line, 100, filePointer);
+            while (!feof(filePointer))
+            {
+                char line[100];
+                fgets(line, 100, filePointer);
 
-            BeginDrawing();
-            DrawText(line, windowCenter - 30, 200 + i, 20, DARKGRAY);
-            EndDrawing();
+                BeginDrawing();
+                DrawText(line, windowCenter - 30, 200 + i, 20, DARKGRAY);
+                EndDrawing();
 
-            i = i + 50;
+                i = i + 50;
+            }
+            fclose(filePointer);
+
+            caseNum = 1;
         }
-        fclose(filePointer);
+
+        EndDrawing();
     }
-
-    EndDrawing();
-
-    }
-
     CloseWindow();
+}
+
+void homeBtn()
+{
+    // PLAY BTN
+    Rectangle btnBounds = {10, 85, 100, 50};
+    int btnState = 0;       // Button state: 0-NORMAL, 1-MOUSE_HOVER, 2-PRESSED
+    bool btnAction = false; // Button action should be activated
+
+    Vector2 mousePoint = {0.0f, 0.0f}; // MOUSE POINTER
+
+    // BTN CONDITIONS
+    mousePoint = GetMousePosition();
+    btnAction = false;
+
+    // Check button state
+    if (CheckCollisionPointRec(mousePoint, btnBounds))
+    {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            btnAction = true;
+    }
+    else
+        btnState = 0;
+
+    if (btnAction) // DO THE NEXT ACTION
+    {
+        firstWindow();
+    }
 }
 
 void scoreBtn()
@@ -118,7 +162,8 @@ void runBtn()
     }
 }
 
-void nicknameWindow() {
+void nicknameWindow()
+{
 
     char name[MAX_INPUT_CHARS + 1] = "\0"; // NOTE: One extra space required for null terminator char '\0'
     int letterCount = 0;
@@ -127,8 +172,6 @@ void nicknameWindow() {
     bool mouseOnText = false;
 
     int framesCounter = 0;
-
-    SetTargetFPS(60);
 
     while (!WindowShouldClose())
     {
@@ -139,8 +182,11 @@ void nicknameWindow() {
         Texture2D imgTexture = LoadTextureFromImage(img);
         DrawTexture(imgTexture, GetScreenWidth() / 2 - imgTexture.width / 2, 30, WHITE);
 
-
         ClearBackground(BLACK);
+
+        DrawRectangleLines(10, 85, 100, 50, WHITE);
+        DrawText("HOME", 30, 100, 20, RED);
+        homeBtn();
 
         DrawText("NICKNAME", windowCenter - 20, 100, 20, WHITE);
 
@@ -192,7 +238,6 @@ void nicknameWindow() {
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-
         DrawRectangleRec(textBox, LIGHTGRAY);
         if (mouseOnText)
             DrawRectangleLines((int)textBox.x, (int)textBox.y, (int)textBox.width, (int)textBox.height, RED);
@@ -200,7 +245,6 @@ void nicknameWindow() {
             DrawRectangleLines((int)textBox.x, (int)textBox.y, (int)textBox.width, (int)textBox.height, DARKGRAY);
 
         DrawText(name, (int)textBox.x + 5, (int)textBox.y + 8, 40, MAROON);
-
 
         if (mouseOnText)
         {
@@ -237,8 +281,6 @@ bool IsAnyKeyPressed()
     return keyPressed;
 }
 
-
-
 void playBtn()
 {
     // PLAY BTN
@@ -267,9 +309,11 @@ void playBtn()
     }
 }
 
-void firstWindow(){
+void firstWindow()
+{
 
-    while(!WindowShouldClose()){
+    while (!WindowShouldClose())
+    {
 
         // IMAGE
         Image img = LoadImage("resources/ghost_chase.gif");
@@ -295,8 +339,8 @@ void firstWindow(){
 int main(void)
 {
     InitWindow(screenWidth, screenHeight, "Game");
-    //Image icon = LoadImage("resources/window_icon.gif");
-    //SetWindowIcon(icon); // Window Icon
+    // Image icon = LoadImage("resources/window_icon.gif");
+    // SetWindowIcon(icon); // Window Icon
     SetTargetFPS(60); // FPS
     firstWindow();
 
