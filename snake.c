@@ -144,7 +144,7 @@ void GameWindow()
 
         
 
-        Image img = LoadImage("resources/images/semaforo-_1_.gif");
+        Image img = LoadImage("resources/images/iconFruit.gif");
         Texture2D imgTexture = LoadTextureFromImage(img);
         DrawTextureV(imgTexture, fruit.position, WHITE);
         // Draw fruit to pick
@@ -379,7 +379,7 @@ void DrawCurrentScreen() {
     switch (configs.currentScreen)
     {
     case 'G':
-        nicknameWindow();
+        //nicknameWindow();
         GameWindow();
         break;
     case 'S':
