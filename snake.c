@@ -1,17 +1,8 @@
-/*******************************************************************************************
- *
- *   raylib - classic game: snake
- *
- *   Sample game developed by Ian Eito, Albert Martos and Ramon Santamaria
- *
- *   This game has been created using raylib v1.3 (www.raylib.com)
- *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
- *
- *   Copyright (c) 2015 Ramon Santamaria (@raysan5)
- *
- ********************************************************************************************/
-
 #include "raylib.h"
+#include "stdio.h"
+
+// Pages
+#include "./pages/ScoreWindow.h"
 
 //----------------------------------------------------------------------------------
 // Some Defines
@@ -82,9 +73,11 @@ static char menu(void);            // Initialize menu and select options
 static void InitScoreGame(void);   // Initialize game
 static void InitSound(void);       // Init sound settings
 static void UpdateGame(void);      // Update game (one frame)
-static void DrawGame(void);        // Draw game (one frame)
+static void DrawCurrentScreen(void); 
 static void UnloadGame(void);      // Unload game
 static void UpdateDrawFrame(void); // Update and Draw (one frame)
+static void GameWindow();
+static void TitleWindow();
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -101,16 +94,14 @@ int main(void)
     configs.framesCounter = 0;
     configs.pause = false;
     configs.gameOver = false;
-    configs.currentScreen = 'T'; // L - Logo; T - Title; M - Mode selector; G - Gameplay; O - Options;
+    configs.currentScreen = 'T'; // L - Logo; T - Title; M - Mode selector; G - Gameplay; O - Options; S - Score;
     configs.optionSelect = 0;
 
     font = LoadFont("resources/alpha_beta.png");
 
     ToggleFullscreen();
-
     InitScoreGame();
     DisableCursor();
-
     SetTargetFPS(60);
     InitSound();
 
@@ -127,11 +118,58 @@ int main(void)
     // De-Initialization
     //--------------------------------------------------------------------------------------
     UnloadGame(); // Unload loaded data (textures, sounds, models...)
-
     CloseWindow(); // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
     return 0;
+}
+
+void GameWindow()
+{
+
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    if (!configs.gameOver)
+    {
+        // Draw BackGround
+        // TODO
+
+        // Draw snake
+        for (int i = 0; i < snake->counterTail; i++)
+            DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
+
+        // Draw fruit to pick
+        DrawRectangleV(fruit.position, fruit.size, fruit.color);
+
+        if (configs.pause)
+        {
+            DrawRectangle(70, 95, 180, 27, DARKGRAY);
+            DrawText(TextFormat("Fruits eated: %i", snake->fruitsCounter), 76, 100, 20, GREEN);
+            DrawText("GAME PAUSED", configs.screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, configs.screenHeight / 2 - 40, 40, GRAY);
+        }
+    }
+    else
+    {
+        DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
+        DrawText("Press [G] to check us in GitHub!", GetScreenWidth() / 2 - MeasureText("Press [G] to check us in GitHub!", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
+    }
+    EndDrawing();
+}
+
+void TitleWindow()
+{
+    BeginDrawing();
+    ClearBackground(DARKGREEN);
+    // IMAGE
+    Image img = LoadImage("resources/images/SnakeBackground.gif");
+    Texture2D imgTexture = LoadTextureFromImage(img);
+    DrawTexture(imgTexture, GetScreenWidth() / 2 + 300, 100, WHITE);
+    DrawText("SNAKE GAME", GetScreenWidth() / 2 - MeasureText("SNAKE GAME", 40) / 2, 150, 40, BLACK);
+    DrawText("START", GetScreenWidth() / 2 - MeasureText("START", 20) / 2, GetScreenHeight() / 2 + 100, 20, (configs.optionSelect == 0) ? WHITE : BLACK);
+    DrawText("SCORE", GetScreenWidth() / 2 - MeasureText("SCORE", 20) / 2, GetScreenHeight() / 2 + 150, 20, (configs.optionSelect == 1) ? WHITE : BLACK);
+    DrawText("OPTIONS", GetScreenWidth() / 2 - MeasureText("OPTIONS", 20) / 2, GetScreenHeight() / 2 + 200, 20, (configs.optionSelect == 2) ? WHITE : BLACK);
+    DrawText("EXIT", GetScreenWidth() / 2 - MeasureText("EXIT", 20) / 2, GetScreenHeight() / 2 + 250, 20, (configs.optionSelect == 3) ? WHITE : BLACK);
+    EndDrawing();
 }
 
 //------------------------------------------------------------------------------------
@@ -318,59 +356,21 @@ void UpdateGame(void)
 }
 
 // Draw game (one frame)
-void DrawGame(void)
+void DrawCurrentScreen(void)
 {
-
-    if (configs.currentScreen == 'T')
+    switch (configs.currentScreen)
     {
-        BeginDrawing();
-        // int pointerY;
-        // configs.optionSelect == 0 ? pointerY = 50 : pointerY = -50;
-        // DrawRectangle(GetScreenWidth() / 2 - MeasureText("OPTIONS", 20), GetScreenHeight() / 2 + configs.optionSelect * 25, 150, 25, GRAY);
-        DrawText("SNAKE GAME", GetScreenWidth() / 2 - MeasureText("SNAKE GAME", 40) / 2, 150, 40, GREEN);
-        DrawText("START", GetScreenWidth() / 2 - MeasureText("START", 20) / 2, GetScreenHeight() / 2 + 150, 20, (configs.optionSelect == 0) ? GRAY : WHITE);
-        DrawText("OPTIONS", GetScreenWidth() / 2 - MeasureText("OPTIONS", 20) / 2, GetScreenHeight() / 2 + 200, 20, (configs.optionSelect == 1) ? GRAY : WHITE);
-        DrawText("EXIT", GetScreenWidth() / 2 - MeasureText("EXIT", 20) / 2, GetScreenHeight() / 2 + 250, 20, (configs.optionSelect == 2) ? GRAY : WHITE);
-        // DrawText("->", GetScreenWidth() / 2 - MeasureText("->", 20) / 2 - 200, GetScreenHeight() / 2 + configs.optionSelect, 20, WHITE);
-        EndDrawing();
-    }
-    else if (configs.currentScreen == 'G')
-    {
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        if (!configs.gameOver)
-        {
-            // Draw grid lines
-            for (int i = 0; i < configs.screenWidth / SQUARE_SIZE + 1; i++)
-            {
-                DrawLineV((Vector2){SQUARE_SIZE * i + offset.x / 2, offset.y / 2}, (Vector2){SQUARE_SIZE * i + offset.x / 2, configs.screenHeight - offset.y / 2}, LIGHTGRAY);
-            }
-
-            for (int i = 0; i < configs.screenHeight / SQUARE_SIZE + 1; i++)
-            {
-                DrawLineV((Vector2){offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, (Vector2){configs.screenWidth - offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, LIGHTGRAY);
-            }
-
-            // Draw snake
-            for (int i = 0; i < snake->counterTail; i++)
-                DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
-
-            // Draw fruit to pick
-            DrawRectangleV(fruit.position, fruit.size, fruit.color);
-
-            if (configs.pause)
-            {
-                DrawRectangle(70, 95, 180, 27, DARKGRAY);
-                DrawText(TextFormat("Fruits eated: %i", snake->fruitsCounter), 76, 100, 20, GREEN);
-                DrawText("GAME PAUSED", configs.screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, configs.screenHeight / 2 - 40, 40, GRAY);
-            }
-        }
-        else
-        {
-            DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
-            DrawText("Press [G] to check us in GitHub!", GetScreenWidth() / 2 - MeasureText("Press [G] to check us in GitHub!", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
-        }
-        EndDrawing();
+    case 'T':
+        TitleWindow();
+        break;
+    case 'G':
+        GameWindow();
+        break;
+    case 'S':
+        ScoreWindow();
+        break;
+    default:
+        break;
     }
 }
 
@@ -387,13 +387,13 @@ void UnloadGame(void)
 void UpdateDrawFrame(void)
 {
     UpdateGame();
-    DrawGame();
+    DrawCurrentScreen();
 }
 
 void InitSound(void)
 {
     InitAudioDevice();
-    sound = LoadMusicStream("./resources/02_A-Type Music (version 1.1).mp3");
+    sound = LoadMusicStream("./resources/backgroundSound.mp3");
     SetMasterVolume(0);
     PlayMusicStream(sound);
 }
