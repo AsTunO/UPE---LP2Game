@@ -2,7 +2,8 @@
 #include "stdio.h"
 
 // Pages
-#include "./pages/ScoreWindow.h"
+//#include "./pages/ScoreWindow.h"
+#include "./pages/OptionsWindow.h"
 
 //----------------------------------------------------------------------------------
 // Some Defines
@@ -53,6 +54,14 @@ typedef struct ScreenSettings
     bool exitGame;
 } ScreenSettings;
 
+typedef struct ScoreData
+{
+    char *pos;
+    char *name;
+    char *score;
+    struct ScoreData *next;
+} ScoreData;
+
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
 //------------------------------------------------------------------------------------
@@ -69,20 +78,22 @@ static Font font = {0};
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
 //------------------------------------------------------------------------------------
-static char menu(void);            // Initialize menu and select options
-static void InitScoreGame(void);   // Initialize game
-static void InitSound(void);       // Init sound settings
-static void UpdateGame(void);      // Update game (one frame)
-static void DrawCurrentScreen(void); 
+static char menu(void);          // Initialize menu and select options
+static void InitScoreGame(void); // Initialize game
+static void InitSound(void);     // Init sound settings
+static void UpdateGame(void);    // Update game (one frame)
+static void DrawCurrentScreen(void);
 static void UnloadGame(void);      // Unload game
 static void UpdateDrawFrame(void); // Update and Draw (one frame)
 static void GameWindow();
 static void TitleWindow();
+void ScoreWindow();
+ScoreData *getData();
 
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main(void)
+    //------------------------------------------------------------------------------------
+    // Program main entry point
+    //------------------------------------------------------------------------------------
+    int main(void)
 {
     // Initialization (Note windowTitle is unused on Android)
     //---------------------------------------------------------
@@ -117,7 +128,7 @@ int main(void)
     }
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadGame(); // Unload loaded data (textures, sounds, models...)
+    UnloadGame();  // Unload loaded data (textures, sounds, models...)
     CloseWindow(); // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
@@ -230,18 +241,29 @@ void UpdateGame(void)
 
         if (configs.optionSelect < 0)
             configs.optionSelect = 0;
-        else if (configs.optionSelect > 2)
-            configs.optionSelect = 2;
+        else if (configs.optionSelect > 3)
+            configs.optionSelect = 3;
 
         if (IsKeyPressed(KEY_ENTER))
         {
-            if (configs.optionSelect == 0)
+            switch (configs.optionSelect)
             {
+            case 0:
                 configs.currentScreen = 'G';
-            }
-            else
-            {
+                break;
+            case 1:
+                configs.currentScreen = 'S';
+                break;
+            case 2:
+                configs.currentScreen = 'O';
+                break;
+            case 3:
                 configs.exitGame = true;
+                break;
+            default:
+                TitleWindow();
+                break;
+
             }
         }
     }
@@ -355,21 +377,83 @@ void UpdateGame(void)
     }
 }
 
-// Draw game (one frame)
-void DrawCurrentScreen(void)
+ScoreData *getData()
 {
+    FILE *filePointer = fopen("data/scoreData/score.csv", "r");
+
+    if (filePointer != NULL)
+    {
+        ScoreData *headerPointer = NULL;
+        while (!feof(filePointer))
+        {
+            char *pos;
+            char *name;
+            char *score;
+            fscanf(filePointer, "%s;%s;%s", pos, name, score);
+
+            if (headerPointer == NULL)
+            {
+                headerPointer->pos = pos;
+                headerPointer->name = name;
+                headerPointer->score = score;
+                headerPointer->next = NULL;
+            }
+            else
+            {
+                ScoreData *current = headerPointer;
+                while (current->next != NULL)
+                {
+                    current = current->next;
+                }
+                current = current->next;
+                current->pos = pos;
+                current->name = name;
+                current->score = score;
+                current->next = NULL;
+            }
+        }
+        fclose(filePointer);
+        return headerPointer;
+    }
+}
+
+void ScoreWindow()
+{
+    ScoreData *dataToDraw = getData();
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+
+    DrawText("SCORE", GetScreenWidth() / 2 - MeasureText("SCORE", 40) / 2, 150, 40, GREEN);
+    int yPosi = 150;
+    if (dataToDraw != NULL)
+    {
+        ScoreData *current = dataToDraw;
+        while (current->next != NULL)
+        {
+            DrawText(current->pos, GetScreenWidth() / 2 - MeasureText(current->pos, 40) / 2, yPosi, 25, GREEN);
+            DrawText(current->name, GetScreenWidth() / 2 - MeasureText(current->name, 25) / 2, yPosi, 25, GREEN);
+            DrawText(current->score, GetScreenWidth() / 2 - MeasureText(current->score, 25) / 2, yPosi, 25, GREEN);
+            yPosi += 50;
+        }
+    }
+    EndDrawing();
+}
+
+void DrawCurrentScreen() {
     switch (configs.currentScreen)
     {
-    case 'T':
-        TitleWindow();
-        break;
     case 'G':
         GameWindow();
         break;
     case 'S':
         ScoreWindow();
         break;
+    case 'O':
+        OptionsWindow();
+        break;
     default:
+        TitleWindow();
         break;
     }
 }
@@ -393,7 +477,7 @@ void UpdateDrawFrame(void)
 void InitSound(void)
 {
     InitAudioDevice();
-    sound = LoadMusicStream("./resources/backgroundSound.mp3");
-    SetMasterVolume(0);
+    sound = LoadMusicStream("./resources/sounds/backgroundSound.mp3");
+    SetMasterVolume(1);
     PlayMusicStream(sound);
 }
