@@ -2,8 +2,9 @@
 #include "stdio.h"
 
 // Pages
-//#include "./pages/ScoreWindow.h"
+#include "./pages/ScoreWindow.h"
 #include "./pages/OptionsWindow.h"
+#include "./pages/NicknameWindow.h"
 
 //----------------------------------------------------------------------------------
 // Some Defines
@@ -54,13 +55,6 @@ typedef struct ScreenSettings
     bool exitGame;
 } ScreenSettings;
 
-typedef struct ScoreData
-{
-    char *pos;
-    char *name;
-    char *score;
-    struct ScoreData *next;
-} ScoreData;
 
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
@@ -87,13 +81,11 @@ static void UnloadGame(void);      // Unload game
 static void UpdateDrawFrame(void); // Update and Draw (one frame)
 static void GameWindow();
 static void TitleWindow();
-void ScoreWindow();
-ScoreData *getData();
 
     //------------------------------------------------------------------------------------
     // Program main entry point
     //------------------------------------------------------------------------------------
-    int main(void)
+int main(void)
 {
     // Initialization (Note windowTitle is unused on Android)
     //---------------------------------------------------------
@@ -140,6 +132,7 @@ void GameWindow()
 
     BeginDrawing();
     ClearBackground(RAYWHITE);
+
     if (!configs.gameOver)
     {
         // Draw BackGround
@@ -149,8 +142,13 @@ void GameWindow()
         for (int i = 0; i < snake->counterTail; i++)
             DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
 
+        
+
+        Image img = LoadImage("resources/images/semaforo-_1_.gif");
+        Texture2D imgTexture = LoadTextureFromImage(img);
+        DrawTextureV(imgTexture, fruit.position, WHITE);
         // Draw fruit to pick
-        DrawRectangleV(fruit.position, fruit.size, fruit.color);
+        //ImageDrawPixelV(&cat, fruit.position, fruit.color);
 
         if (configs.pause)
         {
@@ -377,73 +375,11 @@ void UpdateGame(void)
     }
 }
 
-ScoreData *getData()
-{
-    FILE *filePointer = fopen("data/scoreData/score.csv", "r");
-
-    if (filePointer != NULL)
-    {
-        ScoreData *headerPointer = NULL;
-        while (!feof(filePointer))
-        {
-            char *pos;
-            char *name;
-            char *score;
-            fscanf(filePointer, "%s;%s;%s", pos, name, score);
-
-            if (headerPointer == NULL)
-            {
-                headerPointer->pos = pos;
-                headerPointer->name = name;
-                headerPointer->score = score;
-                headerPointer->next = NULL;
-            }
-            else
-            {
-                ScoreData *current = headerPointer;
-                while (current->next != NULL)
-                {
-                    current = current->next;
-                }
-                current = current->next;
-                current->pos = pos;
-                current->name = name;
-                current->score = score;
-                current->next = NULL;
-            }
-        }
-        fclose(filePointer);
-        return headerPointer;
-    }
-}
-
-void ScoreWindow()
-{
-    ScoreData *dataToDraw = getData();
-
-    BeginDrawing();
-    ClearBackground(BLACK);
-
-    DrawText("SCORE", GetScreenWidth() / 2 - MeasureText("SCORE", 40) / 2, 150, 40, GREEN);
-    int yPosi = 150;
-    if (dataToDraw != NULL)
-    {
-        ScoreData *current = dataToDraw;
-        while (current->next != NULL)
-        {
-            DrawText(current->pos, GetScreenWidth() / 2 - MeasureText(current->pos, 40) / 2, yPosi, 25, GREEN);
-            DrawText(current->name, GetScreenWidth() / 2 - MeasureText(current->name, 25) / 2, yPosi, 25, GREEN);
-            DrawText(current->score, GetScreenWidth() / 2 - MeasureText(current->score, 25) / 2, yPosi, 25, GREEN);
-            yPosi += 50;
-        }
-    }
-    EndDrawing();
-}
-
 void DrawCurrentScreen() {
     switch (configs.currentScreen)
     {
     case 'G':
+        nicknameWindow();
         GameWindow();
         break;
     case 'S':
