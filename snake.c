@@ -129,6 +129,17 @@ void GameWindow(ScreenSettings **configs, Food **fruit)
         // Draw BackGround
         // TODO
 
+        // Draw grid lines
+        for (int i = 0; i < (*configs)->screenWidth / SQUARE_SIZE + 1; i++)
+        {
+            DrawLineV((Vector2){SQUARE_SIZE * i + offset.x / 2, offset.y / 2}, (Vector2){SQUARE_SIZE * i + offset.x / 2, (*configs)->screenHeight - offset.y / 2}, LIGHTGRAY);
+        }
+
+        for (int i = 0; i < (*configs)->screenHeight / SQUARE_SIZE + 1; i++)
+        {
+            DrawLineV((Vector2){offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, (Vector2){(*configs)->screenWidth - offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, LIGHTGRAY);
+        }
+
         // Draw snake
         for (int i = 0; i < snake->counterTail; i++)
             DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
@@ -379,6 +390,69 @@ void UpdateGame(ScreenSettings **configs, Food **fruit)
     }
 }
 
+ScoreData *getData()
+{
+    FILE *filePointer = fopen("data/scoreData/score.csv", "r");
+
+    if (filePointer != NULL)
+    {
+        ScoreData *headerPointer = NULL;
+        while (!feof(filePointer))
+        {
+            char *pos;
+            char *name;
+            char *score;
+            fscanf(filePointer, "%s;%s;%s", pos, name, score);
+
+            if (headerPointer == NULL)
+            {
+                headerPointer->pos = pos;
+                headerPointer->name = name;
+                headerPointer->score = score;
+                headerPointer->next = NULL;
+            }
+            else
+            {
+                ScoreData *current = headerPointer;
+                while (current->next != NULL)
+                {
+                    current = current->next;
+                }
+                current = current->next;
+                current->pos = pos;
+                current->name = name;
+                current->score = score;
+                current->next = NULL;
+            }
+        }
+        fclose(filePointer);
+        return headerPointer;
+    }
+}
+
+void ScoreWindow()
+{
+    ScoreData *dataToDraw = getData();
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+
+    DrawText("SCORE", GetScreenWidth() / 2 - MeasureText("SCORE", 40) / 2, 150, 40, GREEN);
+    int yPosi = 150;
+    if (dataToDraw != NULL)
+    {
+        ScoreData *current = dataToDraw;
+        while (current->next != NULL)
+        {
+            DrawText(current->pos, GetScreenWidth() / 2 - MeasureText(current->pos, 40) / 2, yPosi, 25, GREEN);
+            DrawText(current->name, GetScreenWidth() / 2 - MeasureText(current->name, 25) / 2, yPosi, 25, GREEN);
+            DrawText(current->score, GetScreenWidth() / 2 - MeasureText(current->score, 25) / 2, yPosi, 25, GREEN);
+            yPosi += 50;
+        }
+    }
+    EndDrawing();
+}
+
 void DrawCurrentScreen(ScreenSettings **configs, Food **fruit)
 {
     switch ((*configs)->currentScreen)
@@ -418,6 +492,6 @@ void InitSound(void)
 {
     InitAudioDevice();
     sound = LoadMusicStream("./resources/sounds/02_A-Type Music (version 1.1).mp3");
-    SetMasterVolume(1);
+    SetMasterVolume(0);
     PlayMusicStream(sound);
 }
