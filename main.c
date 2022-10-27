@@ -26,7 +26,6 @@ void scoreWindow()
 
     while (!WindowShouldClose())
     {
-
         // IMAGE
         Image img = LoadImage("resources/pac_chase.gif");
         Texture2D imgTexture = LoadTextureFromImage(img);
