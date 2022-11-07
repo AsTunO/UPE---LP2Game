@@ -19,7 +19,6 @@ void firstWindow();
 
 void scoreWindow()
 {
-
     int caseNum = 0;
     BeginDrawing();
     ClearBackground(BLACK);
