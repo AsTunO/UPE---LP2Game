@@ -17,7 +17,6 @@ bool IsAnyKeyPressed();
 void playBtn();
 void firstWindow();
 
-
 void scoreWindow()
 {
     int caseNum = 0;
