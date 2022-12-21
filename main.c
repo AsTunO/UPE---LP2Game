@@ -63,6 +63,7 @@ void scoreWindow()
     CloseWindow();
 }
 
+
 void homeBtn()
 {
     // PLAY BTN
