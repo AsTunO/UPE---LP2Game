@@ -195,7 +195,6 @@ void nicknameWindow()
             mouseOnText = true;
         else
             mouseOnText = false;
-
         if (mouseOnText)
         {
             // Set the window's cursor to the I-Beam
